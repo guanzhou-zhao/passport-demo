@@ -19,7 +19,8 @@ app.get('/', function (req, res) {
   // fs.writeFile('request.json', req.IncomingMessage, (err) => {
   //   if (err) throw err;
   //   console.log('It\'s saved!');
-console.log(req);
+console.log(req.sessionStore.tablename);
+console.log(req.sessionStore.knex === knex);
     res.send('Hello World!');
   // });
 });
