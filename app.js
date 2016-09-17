@@ -11,6 +11,7 @@ var passport = require('passport')
 var LocalStrategy = require('passport-local').Strategy;
 var fs = require('fs')
 var _ = require('lodash')
+var bcrypt = require('./lib/bcrypt')
 var app = express();
 app.use( bodyParser.urlencoded({ extended: true }) );
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
@@ -24,18 +25,21 @@ var sess = {
 }
 app.use(expressSession(sess))
 app.use(flash())
+
 var users = [
-  {id: 1, username: 'ben', password: '123'},
-  {id: 2, username: 'haha', password: '234'}
+  {id: 1, username: 'ben', hash: bcrypt.hash('123')},
+  {id: 2, username: 'haha', hash: bcrypt.hash('234')}
 ]
 passport.use(new LocalStrategy(
   function(username, password, done) {
     console.log('in LocalStrategy......');
     var user = _.find(users, function (u) {
-      return (u.username === username && u.password === password)
+      return (u.username === username)
     })
     if (!user) {
-      return done(null, false, { message: 'Incorrect username or password.' });
+      return done(null, false, { message: 'Incorrect username.' });
+    } else if (!bcrypt.compareHash(password, user.hash)) {
+      return done(null, false, { message: 'Incorrect password.' });
     }
     return done(null, user);
   }
