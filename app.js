@@ -13,6 +13,7 @@ var fs = require('fs')
 var _ = require('lodash')
 var bcrypt = require('./lib/bcrypt')
 var User = require('./models/user')
+var indexRouter = require('./routes')
 var app = express();
 app.use( bodyParser.urlencoded({ extended: true }) );
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
@@ -27,32 +28,12 @@ var sess = {
 app.use(expressSession(sess))
 app.use(flash())
 
-var users = [
-  {id: 1, username: 'ben', hash: bcrypt.hash('123')},
-  {id: 2, username: 'haha', hash: bcrypt.hash('234')}
-]
 passport.use(new LocalStrategy(User.verifyUser));
 passport.serializeUser(User.serializeUser);
 passport.deserializeUser(User.deserializeUser);
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/', ensureLoggedIn(), function (req, res) {
-  console.log('req', req);
-  res.render('index')
-});
-app.get('/login', function (req, res, next) {
-  res.render('login', {flash: req.flash('error')})
-})
-app.post('/login',
-  passport.authenticate('local', {
-      successRedirect: '/',
-    failureRedirect: '/login',
-    failureFlash: true })
-);
-app.get('/logout', function (req, res, next) {
-  req.logout()
-  res.redirect('/login')
-})
+app.use('/', indexRouter)
 
 module.exports = app
