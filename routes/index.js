@@ -4,8 +4,8 @@ var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn
 module.exports = router
 
 router.get('/', ensureLoggedIn(), function (req, res) {
-  console.log('req', req);
-  res.render('index')
+  // console.log('req', req);
+  res.render('index', {flash: req.flash('error')})
 });
 router.get('/login', function (req, res, next) {
   res.render('login', {flash: req.flash('error')})

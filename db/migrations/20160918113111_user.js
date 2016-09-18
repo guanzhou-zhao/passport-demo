@@ -4,6 +4,7 @@ exports.up = function(knex, Promise) {
     table.increments('id').primary()
     table.string('username')
     table.binary('hash')
+    table.integer('privilege')
     table.timestamps(true, true)
   })
 };

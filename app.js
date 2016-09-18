@@ -14,9 +14,16 @@ var _ = require('lodash')
 var bcrypt = require('./lib/bcrypt')
 var User = require('./models/user')
 var indexRouter = require('./routes')
+var classifiedRouter = require('./routes/classified')
 var app = express();
 app.use( bodyParser.urlencoded({ extended: true }) );
-app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+var hbs = exphbs.create({
+  defaultLayout: 'main',
+  helpers: {
+  //   prevLink: function(link) {console.log('in helper', link);return link }
+  }
+});
+app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 var sess = {
   resave: false,
@@ -34,6 +41,10 @@ passport.deserializeUser(User.deserializeUser);
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(function(req, res, next){
+    res.local= {req: req}
+    next()
+})
 app.use('/', indexRouter)
-
+app.use('/classified', classifiedRouter)
 module.exports = app
