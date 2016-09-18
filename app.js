@@ -12,6 +12,7 @@ var LocalStrategy = require('passport-local').Strategy;
 var fs = require('fs')
 var _ = require('lodash')
 var bcrypt = require('./lib/bcrypt')
+var User = require('./models/user')
 var app = express();
 app.use( bodyParser.urlencoded({ extended: true }) );
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
@@ -30,32 +31,9 @@ var users = [
   {id: 1, username: 'ben', hash: bcrypt.hash('123')},
   {id: 2, username: 'haha', hash: bcrypt.hash('234')}
 ]
-passport.use(new LocalStrategy(
-  function(username, password, done) {
-    console.log('in LocalStrategy......');
-    var user = _.find(users, function (u) {
-      return (u.username === username)
-    })
-    if (!user) {
-      return done(null, false, { message: 'Incorrect username.' });
-    } else if (!bcrypt.compareHash(password, user.hash)) {
-      return done(null, false, { message: 'Incorrect password.' });
-    }
-    return done(null, user);
-  }
-));
-passport.serializeUser(function(user, done) {
-  console.log('serialize user......');
-  done(null, user);
-});
-
-passport.deserializeUser(function(user, done) {
-  console.log('deserialize user......');
-  var duser = _.find(users, function (u) {
-    return u.id === user.id
-  })
-    done(null, duser);
-});
+passport.use(new LocalStrategy(User.verifyUser));
+passport.serializeUser(User.serializeUser);
+passport.deserializeUser(User.deserializeUser);
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -76,6 +54,5 @@ app.get('/logout', function (req, res, next) {
   req.logout()
   res.redirect('/login')
 })
-app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
-});
+
+module.exports = app
